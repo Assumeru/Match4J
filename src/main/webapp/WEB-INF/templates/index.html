@@ -1,0 +1,24 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="fragment" th:remove="tag">
+	<section id="lists">
+		<h2>Pick a list</h2>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>#</th><th>Title</th><th>First</th><th>Second</th><th>Edit</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="list : ${lists}">
+					<td th:text="${list.id}"></td>
+					<td><a th:href="@{${'/list/' + list.id}}" th:text="${list.title}"></a></td>
+					<td th:text="${list.first}"></td>
+					<td th:text="${list.second}"></td>
+					<td><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}"><span class="glyphicon glyphicon-edit"></span></a></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+</body>
+</html>

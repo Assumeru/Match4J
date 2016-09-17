@@ -1,0 +1,59 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="fragment" th:remove="tag">
+<section id="list">
+	<h2 th:text="${list.title}"></h2>
+	<form method="post" th:action="@{/current}">
+		<input type="hidden" name="id" th:value="${list.id}" />
+		<label class="form-control">
+			<input type="checkbox" name="double" checked /> Test every word twice.
+		</label>
+		<label class="form-control">
+			<input type="checkbox" name="repeat" checked /> Repeat words on failure.
+		</label>
+		<label class="form-control">
+			<input type="checkbox" name="casesensitive" checked /> Match case.
+		</label>
+		<div class="form-control">
+			<label>
+				<input type="radio" name="direction" value="first" checked />
+				<span th:text="${list.first}"></span> to <span th:text="${list.second}"></span>
+			</label>
+			<label>
+				<input type="radio" name="direction" value="second" />
+				<span th:text="${list.second}"></span> to <span th:text="${list.first}"></span>
+			</label>
+		</div>
+		<input type="submit" value="Test" class="btn btn-success" />
+	</form>
+	<h3>Words</h3>
+	<table class="table">
+		<thead>
+			<tr>
+				<th th:text="${list.first}"></th><th th:text="${list.second}"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="word : ${second}">
+				<td th:text="${word.word}"></td>
+				<td th:if="${word.matches.size() == 1}" th:text="${word.matches.get(0).word}"></td>
+				<td th:if="${word.matches.size() != 1}">
+					<ul>
+						<li th:each="match : ${word.matches}" th:text="${match.word}"></li>
+					</ul>
+				</td>
+			</tr>
+			<tr th:each="word : ${list.secondWords}">
+				<td th:if="${word.matches.size() == 1}" th:text="${word.matches.get(0).word}"></td>
+				<td th:if="${word.matches.size() != 1}">
+					<ul>
+						<li th:each="match : ${word.matches}" th:text="${match.word}"></li>
+					</ul>
+				</td>
+				<td th:text="${word.word}"></td>
+			</tr>
+		</tbody>
+	</table>
+</section>
+</body>
+</html>

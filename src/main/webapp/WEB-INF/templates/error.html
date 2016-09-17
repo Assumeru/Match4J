@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="fragment" th:remove="tag">
+<div class="jumbotron">
+	<h1><span class="glyphicon glyphicon-warning-sign"></span> <span th:text="${name}"></span></h1>
+	<p th:text="${description}"></p>
+</div>
+</body>
+</html>

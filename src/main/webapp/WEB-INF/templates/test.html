@@ -1,0 +1,40 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="fragment" th:remove="tag">
+<section id="current">
+	<p class="loading">Loading...</p>
+	<div class="hidden">
+		<h2 data-type="title"></h2>
+		<h3 data-result="correct" class="text-success">Correct!</h3>
+		<h3 data-result="wrong" class="text-danger">Wrong, the correct answer was: <span class="text-success" data-type="correct"></span></h3>
+		<h3>Word: <span class="bg-info" data-type="current"></span></h3>
+		<form>
+			<input type="text" value="" name="answer" /> <input type="submit" value="Go" />
+		</form>
+		<p class="text-info"><strong data-type="number"></strong> words left.</p>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Try</th><th>Correct</th><th>Incorrect</th>
+				</tr>
+			</thead>
+			<tbody data-type="results">
+			</tbody>
+		</table>
+	</div>
+</section>
+<section id="results" class="hidden">
+	<h2>Results</h2>
+	<p>Grade: <strong data-type="grade"></strong></p>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Try</th><th>Correct</th><th>Incorrect</th>
+			</tr>
+		</thead>
+		<tbody data-type="results">
+		</tbody>
+	</table>
+</section>
+</body>
+</html>
