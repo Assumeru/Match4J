@@ -14,6 +14,7 @@ import org.ee.logger.Logger;
 import org.ee.sql.CloseableDataSource;
 
 import com.ee.match.MatchContext;
+import com.ee.match.exception.StateException;
 import com.ee.match.quiz.Quiz;
 import com.ee.match.quiz.Word;
 
@@ -81,6 +82,32 @@ public class State extends CloseableDataSource {
 			Word second = secondCache.get(result.getInt(2));
 			first.getMatches().add(second);
 			second.getMatches().add(first);
+		}
+	}
+
+	public void removeList(Quiz quiz) {
+		try(Connection conn = dataSource.getConnection()) {
+			PreparedStatement statement = conn.prepareStatement("DELETE FROM `lists` WHERE `id` = ?");
+			statement.setInt(1, quiz.getId());
+			statement.execute();
+			conn.commit();
+		} catch(SQLException e) {
+			throw new RuntimeException("Failed to delete list " + quiz.getId(), e);
+		}
+	}
+
+	public void modifyList(Quiz quiz, Quiz edited) throws StateException {
+		try(Connection conn = dataSource.getConnection()) {
+			PreparedStatement statement = conn.prepareStatement("UPDATE `lists` SET `title` = ?, `first` = ?, `second` = ? WHERE `id` = ?");
+			statement.setString(1, edited.getTitle());
+			statement.setString(2, edited.getFirst());
+			statement.setString(3, edited.getSecond());
+			statement.setInt(4, quiz.getId());
+			statement.execute();
+			//TODO update words
+			conn.commit();
+		} catch(SQLException e) {
+			throw new StateException("Failed to save changes to " + quiz.getId(), e);
 		}
 	}
 }

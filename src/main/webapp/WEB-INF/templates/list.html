@@ -3,6 +3,7 @@
 <body th:fragment="fragment" th:remove="tag">
 <section id="list">
 	<h2 th:text="${list.title}"></h2>
+	<p><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}"><span class="glyphicon glyphicon-edit"></span></a></p>
 	<form method="post" th:action="@{/current}">
 		<input type="hidden" name="id" th:value="${list.id}" />
 		<label class="form-control">

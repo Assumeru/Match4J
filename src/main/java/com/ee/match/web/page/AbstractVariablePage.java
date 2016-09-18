@@ -36,10 +36,11 @@ public abstract class AbstractVariablePage extends WebPage {
 		template = new UriTemplate(pattern + "{___slash : [/]*}");
 		List<Method> methods = ReflectionUtils.getMethodsUntil(getClass(), AbstractVariablePage.class);
 		for(Method method : methods) {
+			Class<?>[] paramTypes = method.getParameterTypes();
 			if("setVariables".equals(method.getName()) && method.getParameterCount() > 2
-					&& method.getParameterTypes()[0] == Template.class
-					&& method.getParameterTypes()[1] == Request.class
-					&& method.getParameterTypes()[2] == Response.class) {
+					&& paramTypes[0] == Template.class
+					&& paramTypes[1] == Request.class
+					&& paramTypes[2] == Response.class) {
 				setMethod(method);
 				break;
 			}

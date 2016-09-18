@@ -57,4 +57,10 @@ public abstract class WebPage implements RequestFilter {
 	public boolean matches(Request request) {
 		return request.getPath().equals(this.path) || request.getPath().equals(this.path + "/");
 	}
+
+	protected final void redirect(String path) {
+		Response response = new SimpleResponse(Status.SEE_OTHER);
+		response.setHeader("Location", context.getContext().getContextPath() + path);
+		throw new WebException(response);
+	}
 }
