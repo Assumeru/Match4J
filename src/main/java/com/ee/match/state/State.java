@@ -4,14 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ee.collection.MapSet;
 import org.ee.logger.LogManager;
 import org.ee.logger.Logger;
 import org.ee.sql.CloseableDataSource;
+import org.ee.sql.PreparedStatementBuilder;
 
 import com.ee.match.MatchContext;
 import com.ee.match.exception.StateException;
@@ -85,14 +89,14 @@ public class State extends CloseableDataSource {
 		}
 	}
 
-	public void removeList(Quiz quiz) {
+	public void removeList(Quiz quiz) throws StateException {
 		try(Connection conn = dataSource.getConnection()) {
 			PreparedStatement statement = conn.prepareStatement("DELETE FROM `lists` WHERE `id` = ?");
 			statement.setInt(1, quiz.getId());
 			statement.execute();
 			conn.commit();
 		} catch(SQLException e) {
-			throw new RuntimeException("Failed to delete list " + quiz.getId(), e);
+			throw new StateException("Failed to delete list " + quiz.getId(), e);
 		}
 	}
 
@@ -104,10 +108,128 @@ public class State extends CloseableDataSource {
 			statement.setString(3, edited.getSecond());
 			statement.setInt(4, quiz.getId());
 			statement.execute();
-			//TODO update words
+			updateWords(conn, quiz, edited);
 			conn.commit();
 		} catch(SQLException e) {
 			throw new StateException("Failed to save changes to " + quiz.getId(), e);
 		}
+	}
+
+	private void updateWords(Connection conn, Quiz quiz, Quiz edited) throws SQLException {
+		MapSet<Word> newFirst = new MapSet<>(edited.getFirstWords());
+		MapSet<Word> newSecond = new MapSet<>(edited.getSecondWords());
+		List<Word> toDelete = new ArrayList<>(0);
+		for(Word word : quiz.getFirstWords()) {
+			if(newFirst.contains(word)) {
+				newFirst.get(word).setId(word.getId());
+				newFirst.remove(word);
+			} else {
+				toDelete.add(word);
+			}
+		}
+		for(Word word : quiz.getSecondWords()) {
+			if(newSecond.contains(word)) {
+				newSecond.get(word).setId(word.getId());
+				newSecond.remove(word);
+			} else {
+				toDelete.add(word);
+			}
+		}
+		PreparedStatement statement = conn.prepareStatement("DELETE FROM `matches` WHERE `id` = ?");
+		statement.setInt(1, quiz.getId());
+		statement.execute();
+		if(!toDelete.isEmpty()) {
+			deleteWords(conn, toDelete);
+		}
+		if(newFirst.size() + newSecond.size() > 0) {
+			saveWords(conn, quiz.getId(), newFirst, newSecond);
+		}
+		saveMatches(conn, edited);
+	}
+
+	private void deleteWords(Connection conn, List<Word> toDelete) throws SQLException {
+		PreparedStatement statement = new PreparedStatementBuilder("DELETE FROM `words` WHERE `id` = IN(").appendParameters(toDelete.size()).append(')').build(conn);
+		for(int i = 0; i < toDelete.size(); i++) {
+			statement.setInt(1 + i, toDelete.get(i).getId());
+		}
+		statement.execute();
+	}
+
+	public void saveList(Quiz quiz) throws StateException {
+		try(Connection conn = dataSource.getConnection()) {
+			PreparedStatement statement = conn.prepareStatement("INSERT INTO `lists` (`title`, `first`, `second`, `password`) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			statement.setString(1, quiz.getTitle());
+			statement.setString(2, quiz.getFirst());
+			statement.setString(3, quiz.getSecond());
+			statement.setString(4, null);
+			statement.execute();
+			ResultSet keys = statement.getGeneratedKeys();
+			keys.next();
+			quiz.setId(keys.getInt(1));
+			saveWords(conn, quiz);
+			saveMatches(conn, quiz);
+			conn.commit();
+		} catch(SQLException e) {
+			throw new StateException("Failed to save list", e);
+		}
+	}
+
+	private void saveWords(Connection conn, Quiz quiz) throws SQLException {
+		saveWords(conn, quiz.getId(), quiz.getFirstWords(), quiz.getSecondWords());
+	}
+
+	private void saveWords(Connection conn, int id, Collection<Word> firstWords, Collection<Word> secondWords) throws SQLException {
+		StringBuilder query = new StringBuilder("INSERT INTO `words` (`list`, `type`, `word`) VALUES(?, ?, ?)");
+		int words = firstWords.size() + secondWords.size();
+		for(int i = 1; i < words; i++) {
+			query.append(", (?, ?, ?)");
+		}
+		PreparedStatement statement = conn.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS);
+		int i = 1;
+		for(Word word : firstWords) {
+			statement.setInt(i++, id);
+			statement.setInt(i++, word.getType().ordinal());
+			statement.setString(i++, word.getWord());
+		}
+		for(Word word : secondWords) {
+			statement.setInt(i++, id);
+			statement.setInt(i++, word.getType().ordinal());
+			statement.setString(i++, word.getWord());
+		}
+		statement.execute();
+		ResultSet keys = statement.getGeneratedKeys();
+		for(Word word : firstWords) {
+			keys.next();
+			word.setId(keys.getInt(1));
+		}
+		for(Word word : secondWords) {
+			keys.next();
+			word.setId(keys.getInt(1));
+		}
+	}
+
+	private void saveMatches(Connection conn, Quiz quiz) throws SQLException {
+		StringBuilder query = new StringBuilder("INSERT INTO `matches` (`id`, `first`, `second`) VALUES");
+		boolean comma = false;
+		for(Word first : quiz.getFirstWords()) {
+			for(int i = 0; i < first.getMatches().size(); i++) {
+				if(comma) {
+					query.append(',');
+				} else {
+					comma = true;
+				}
+				query.append("(?, ?, ?)");
+			}
+		}
+		int i = 1;
+		PreparedStatement statement = conn.prepareStatement(query.toString());
+		for(Word first : quiz.getFirstWords()) {
+			for(Word second : first.getMatches()) {
+				statement.setInt(i++, quiz.getId());
+				statement.setInt(i++, first.getId());
+				statement.setInt(i++, second.getId());
+			}
+		}
+		statement.execute();
 	}
 }

@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <body th:fragment="fragment" th:remove="tag">
 <section id="list">
+	<p class="pull-right"><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></p>
 	<h2 th:text="${list.title}"></h2>
-	<p><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}"><span class="glyphicon glyphicon-edit"></span></a></p>
 	<form method="post" th:action="@{/current}">
 		<input type="hidden" name="id" th:value="${list.id}" />
 		<label class="form-control">
@@ -35,7 +35,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr th:each="word : ${second}">
+			<tr th:each="word : ${list.firstWords}">
 				<td th:text="${word.word}"></td>
 				<td th:if="${word.matches.size() == 1}" th:text="${word.matches.get(0).word}"></td>
 				<td th:if="${word.matches.size() != 1}">
@@ -44,7 +44,7 @@
 					</ul>
 				</td>
 			</tr>
-			<tr th:each="word : ${list.secondWords}">
+			<tr th:each="word : ${second}">
 				<td th:if="${word.matches.size() == 1}" th:text="${word.matches.get(0).word}"></td>
 				<td th:if="${word.matches.size() != 1}">
 					<ul>

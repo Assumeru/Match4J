@@ -1,0 +1,49 @@
+<!DOCTYPE>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="fragment" th:remove="tag">
+<section>
+	<form method="post">
+		<input type="text" name="title" placeholder="Title" required />
+		<table class="table">
+			<thead>
+				<tr>
+					<th><input type="text" name="first" placeholder="First" required /></th>
+					<th><input type="text" name="second" placeholder="Second" required /></th>
+				</tr>
+			</thead>
+			<tbody data-type="words">
+				<tr>
+					<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+					<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+				</tr>
+				<tr>
+					<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+					<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+				</tr>
+				<tr>
+					<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+					<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+				</tr>
+				<tr>
+					<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+					<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+				</tr>
+				<tr>
+					<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+					<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+				</tr>
+			</tbody>
+		</table>
+		<input data-type="add" class="btn btn-primary" type="button" value="Add 5 rows" />
+		<input data-type="clear" class="btn btn-danger" type="button" value="Clear" />
+		<input class="btn btn-success" type="submit" value="Save" />
+	</form>
+</section>
+<table class="hidden" id="template-input-row">
+	<tr>
+		<td><input type="text" placeholder="First word" name="first_word[]" /></td>
+		<td><input type="text" placeholder="Second word" name="second_word[]" /></td>
+	</tr>
+</table>
+</body>
+</html>

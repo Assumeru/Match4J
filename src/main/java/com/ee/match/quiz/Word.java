@@ -2,12 +2,14 @@ package com.ee.match.quiz;
 
 import java.util.Collection;
 
+import com.google.common.base.Objects;
+
 public class Word {
 	public enum Type {
 		FIRST, SECOND
 	}
 
-	private final int id;
+	private int id;
 	private final Type type;
 	private final String word;
 	private final Collection<Word> matches;
@@ -23,6 +25,10 @@ public class Word {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public Type getType() {
 		return type;
 	}
@@ -33,5 +39,25 @@ public class Word {
 
 	public Collection<Word> getMatches() {
 		return matches;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		} else if(obj instanceof Word) {
+			return Objects.equal(word, ((Word) obj).word);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return 11 + 31 * Objects.hashCode(word);
+	}
+
+	@Override
+	public String toString() {
+		return word;
 	}
 }

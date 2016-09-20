@@ -1,6 +1,7 @@
 package com.ee.match.web.page;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.ee.logger.LogManager;
 import org.ee.logger.Logger;
 import org.ee.web.Status;
 import org.ee.web.exception.NotFoundException;
+import org.ee.web.exception.WebException;
 import org.ee.web.request.Request;
 import org.ee.web.request.Request.Method;
 import org.ee.web.response.Response;
@@ -42,21 +44,31 @@ public class EditPage extends AbstractVariablePage {
 			String title = params.getFirst("title");
 			String first = params.getFirst("first");
 			String second = params.getFirst("second");
-			List<String> firstWords = params.get("first_word[]");
-			List<String> secondWords = params.get("second_word[]");
-			if(firstWords != null && secondWords != null && title != null && first != null && second != null) {
+			List<String> firstWords = getWords(params.get("first_word[]"));
+			List<String> secondWords = getWords(params.get("second_word[]"));
+			if(title != null && first != null && second != null) {
 				Quiz edited = buildQuiz(firstWords, secondWords, title, first, second);
+				edited.setId(quiz.getId());
 				saveChanges(quiz, edited);
 				template.setVariable("list", edited);
 			}
 		}
 	}
 
+	private List<String> getWords(List<String> list) {
+		return list == null ? Collections.emptyList() : list;
+	}
+
 	private void saveChanges(Quiz quiz, Quiz edited) {
 		if(!edited.getTitle().isEmpty() && !edited.getFirst().isEmpty() && !edited.getSecond().isEmpty()) {
 			if(edited.getFirstWords().isEmpty()) {
-				context.getState().removeList(quiz);
-				redirect("/");
+				LOG.d("deleting " + quiz.getId());
+				try {
+					context.getState().removeList(quiz);
+					redirect("/");
+				} catch(StateException e) {
+					throw new WebException(e);
+				}
 			} else {
 				try {
 					context.getState().modifyList(quiz, edited);
@@ -68,7 +80,7 @@ public class EditPage extends AbstractVariablePage {
 		}
 	}
 
-	private Quiz buildQuiz(List<String> firstWords, List<String> secondWords, String title, String firstName, String secondName) {
+	static Quiz buildQuiz(List<String> firstWords, List<String> secondWords, String title, String firstName, String secondName) {
 		Map<String, Word> firstCache = new LinkedHashMap<>();
 		Map<String, Word> secondCache = new LinkedHashMap<>();
 		for(int i = 0; i < firstWords.size() && i < secondWords.size(); i++) {
@@ -82,7 +94,7 @@ public class EditPage extends AbstractVariablePage {
 		return new Quiz(0, title.trim(), firstName.trim(), secondName.trim(), new ArrayList<>(firstCache.values()), new ArrayList<>(secondCache.values()));
 	}
 
-	private Word getOrCreateWord(String word, Type type, Map<String, Word> cache) {
+	static Word getOrCreateWord(String word, Type type, Map<String, Word> cache) {
 		word = word == null ? "" : word.trim();
 		if(word.isEmpty()) {
 			return null;

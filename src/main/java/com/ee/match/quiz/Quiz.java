@@ -3,7 +3,7 @@ package com.ee.match.quiz;
 import java.util.List;
 
 public class Quiz {
-	private final int id;
+	private int id;
 	private final String title;
 	private final String first;
 	private final String second;
@@ -25,6 +25,10 @@ public class Quiz {
 
 	public int getId() {
 		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getTitle() {

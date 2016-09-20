@@ -13,7 +13,7 @@
 			}
 			$current.fix();
 		} else {
-			//window.location = './';
+			window.location = './';
 		}
 	}
 
