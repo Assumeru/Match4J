@@ -3,6 +3,7 @@
 <body th:fragment="fragment" th:remove="tag">
 <section>
 	<form method="post">
+		<p class="alert alert-danger" th:if="${saveerror}">List not saved. Make sure all fields have been filled out.</p>
 		<input type="text" name="title" placeholder="Title" th:value="${list.title}" required />
 		<table class="table">
 			<thead>

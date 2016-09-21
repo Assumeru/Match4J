@@ -42,6 +42,7 @@ public abstract class WebPage implements RequestFilter {
 		Template template = context.getTemplateProvider().createTemplate("page", request);
 		template.setVariable(Variable.TITLE, title);
 		template.setVariable(Variable.BODY, body);
+		template.getVariable(Variable.JAVASCRIPT_SETTINGS).put("ajaxurl", context.getContextPath() + "/ajax");
 		setVariables(template, request, response);
 		try {
 			template.process(output);

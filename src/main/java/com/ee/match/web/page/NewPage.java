@@ -37,6 +37,7 @@ public class NewPage extends WebPage {
 			if(title != null && first != null && second != null) {
 				Quiz quiz = EditPage.buildQuiz(firstWords, secondWords, title, first, second);
 				save(quiz);
+				template.setVariable("saveerror", true);
 				template.setVariable("list", quiz);
 				template.setVariable(Variable.BODY, "edit");
 			}

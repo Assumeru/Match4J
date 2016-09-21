@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.ee.collection.MapSet;
 import org.ee.logger.LogManager;
@@ -231,5 +232,50 @@ public class State extends CloseableDataSource {
 			}
 		}
 		statement.execute();
+	}
+
+	public int addMatch(int list, int word, String match) throws StateException {
+		try(Connection conn = dataSource.getConnection()) {
+			PreparedStatement statement = conn.prepareStatement("SELECT `type` FROM `words` WHERE `id` = ? AND `list` = ?");
+			statement.setInt(1, word);
+			statement.setInt(2, list);
+			ResultSet result = statement.executeQuery();
+			if(result.next()) {
+				Word.Type type = Word.Type.values()[result.getInt(1)];
+				int matchId = getOrAddWord(conn, list, match, type == Word.Type.FIRST ? Word.Type.SECOND : Word.Type.FIRST);
+				statement = conn.prepareStatement("INSERT INTO `matches` (`id`, `first`, `second`) VALUES(?, ?, ?)");
+				statement.setInt(1, list);
+				statement.setInt(2, type == Word.Type.FIRST ? word : matchId);
+				statement.setInt(3, type == Word.Type.SECOND ? word : matchId);
+				statement.execute();
+				conn.commit();
+				return matchId;
+			} else {
+				throw new NoSuchElementException("Word " + word + " does not exist in " + list);
+			}
+		} catch(SQLException e) {
+			throw new StateException("Failed to add match", e);
+		}
+	}
+
+	private int getOrAddWord(Connection conn, int list, String word, Word.Type type) throws SQLException {
+		PreparedStatement statement = conn.prepareStatement("SELECT `id` FROM `words` WHERE `list` = ? AND `type` = ? AND `word` = ?");
+		statement.setInt(1, list);
+		statement.setInt(2, type.ordinal());
+		statement.setString(3, word);
+		ResultSet result = statement.executeQuery();
+		if(result.next()) {
+			LOG.d("Word already exists");
+			return result.getInt(1);
+		}
+		LOG.d("Adding new word");
+		statement = conn.prepareStatement("INSERT INTO `words` (`list`, `type`, `word`) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+		statement.setInt(1, list);
+		statement.setInt(2, type.ordinal());
+		statement.setString(3, word);
+		statement.execute();
+		result = statement.getGeneratedKeys();
+		result.next();
+		return result.getInt(1);
 	}
 }

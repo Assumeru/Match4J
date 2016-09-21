@@ -50,6 +50,7 @@ public class EditPage extends AbstractVariablePage {
 				Quiz edited = buildQuiz(firstWords, secondWords, title, first, second);
 				edited.setId(quiz.getId());
 				saveChanges(quiz, edited);
+				template.setVariable("saveerror", true);
 				template.setVariable("list", edited);
 			}
 		}

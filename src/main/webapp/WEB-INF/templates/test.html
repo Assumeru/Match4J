@@ -6,7 +6,10 @@
 	<div class="hidden">
 		<h2 data-type="title"></h2>
 		<h3 data-result="correct" class="text-success">Correct!</h3>
-		<h3 data-result="wrong" class="text-danger">Wrong, the correct answer was: <span class="text-success" data-type="correct"></span></h3>
+		<h3 data-result="wrong" class="text-danger">
+			Wrong, the correct answer was: <span class="text-success" data-type="correct"></span>
+			<button class="btn btn-sm btn-primary" data-type="not-wrong">I'm not wrong!</button>
+		</h3>
 		<h3>Word: <span class="bg-info" data-type="current"></span></h3>
 		<form>
 			<input type="text" value="" name="answer" /> <input type="submit" value="Go" />

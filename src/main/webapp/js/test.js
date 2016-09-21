@@ -48,7 +48,8 @@
 	}
 
 	function submitAnswer($e) {
-		var $result = $current.answerQuestion($('#current [name="answer"]').val().trim());
+		var $answer = $('#current [name="answer"]').val().trim(),
+		$result = $current.answerQuestion($answer);
 		$e.preventDefault();
 		if($result) {
 			$('#current [data-result="correct"]').show();
@@ -57,6 +58,7 @@
 			$('#current [data-result="wrong"]').show();
 			$('#current [data-result="correct"]').hide();
 			$('#current [data-type="correct"]').text($current.current.matches.join(' or '));
+			$('#current [data-type="not-wrong"]').off().click(bindNotWrong($current.current, $answer));
 		}
 		if($current.words.length > 0) {
 			$current.next();
@@ -65,6 +67,39 @@
 		} else {
 			$EEstore.removeItem('currentTest');
 			showResults();
+		}
+	}
+
+	function bindNotWrong($word, $answer) {
+		return function($e) {
+			$e.preventDefault();
+			if(window.confirm('Are you sure you want to add "' + $answer + '" as a match for "' + $word.word + '"?')) {
+				$.ajax({
+					method: 'POST',
+					url: Match.settings.ajaxurl,
+					data: {
+						type: 'add-match',
+						list: $current.id,
+						word: $word.id,
+						match: $answer
+					}
+				}).done(function($msg) {
+					$word.matches.push($answer);
+					console.log($msg);
+				}).fail(function($msg) {
+					var $json, $error = 'Something went wrong adding "' + $answer + '" as a match for "' + $word.word + '"';
+					try {
+						$json = JSON.parse($msg);
+						if($json && $json.error !== undefined) {
+							$error += ':\n' + $json.error;
+						}
+					} catch($e) {
+						console.log($e);
+					}
+					window.alert($error);
+				});
+				$(this).hide();
+			}
 		}
 	}
 
