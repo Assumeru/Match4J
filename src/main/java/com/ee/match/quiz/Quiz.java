@@ -2,23 +2,27 @@ package com.ee.match.quiz;
 
 import java.util.List;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class Quiz {
 	private int id;
 	private final String title;
 	private final String first;
 	private final String second;
+	private final String password;
 	private final List<Word> firstWords;
 	private final List<Word> secondWords;
 
 	public Quiz(int id, String title, String first, String second) {
-		this(id, title, first, second, null, null);
+		this(id, title, first, second, null, null, null);
 	}
 
-	public Quiz(int id, String title, String first, String second, List<Word> firstWords, List<Word> secondWords) {
+	public Quiz(int id, String title, String first, String second, String password, List<Word> firstWords, List<Word> secondWords) {
 		this.id = id;
 		this.title = title;
 		this.first = first;
 		this.second = second;
+		this.password = password;
 		this.firstWords = firstWords;
 		this.secondWords = secondWords;
 	}
@@ -49,5 +53,17 @@ public class Quiz {
 
 	public List<Word> getSecondWords() {
 		return secondWords;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public boolean hasPassword() {
+		return password != null;
+	}
+
+	public boolean passwordMatches(String password) {
+		return BCrypt.checkpw(password, this.password);
 	}
 }

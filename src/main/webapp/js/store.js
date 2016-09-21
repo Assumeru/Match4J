@@ -1,4 +1,4 @@
-$EEstore = (function() {
+Match.Store = (function() {
 	var $store,
 	$supported = true;
 	try {

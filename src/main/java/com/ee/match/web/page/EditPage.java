@@ -44,12 +44,15 @@ public class EditPage extends AbstractVariablePage {
 			String title = params.getFirst("title");
 			String first = params.getFirst("first");
 			String second = params.getFirst("second");
+			String password = params.getFirst("password");
 			List<String> firstWords = getWords(params.get("first_word[]"));
 			List<String> secondWords = getWords(params.get("second_word[]"));
 			if(title != null && first != null && second != null) {
-				Quiz edited = buildQuiz(firstWords, secondWords, title, first, second);
+				Quiz edited = buildQuiz(firstWords, secondWords, title, first, second, quiz.getPassword());
 				edited.setId(quiz.getId());
-				saveChanges(quiz, edited);
+				if(!quiz.hasPassword() || (password != null && !password.isEmpty() && quiz.passwordMatches(password))) {
+					saveChanges(quiz, edited);
+				}
 				template.setVariable("saveerror", true);
 				template.setVariable("list", edited);
 			}
@@ -81,7 +84,7 @@ public class EditPage extends AbstractVariablePage {
 		}
 	}
 
-	static Quiz buildQuiz(List<String> firstWords, List<String> secondWords, String title, String firstName, String secondName) {
+	static Quiz buildQuiz(List<String> firstWords, List<String> secondWords, String title, String firstName, String secondName, String password) {
 		Map<String, Word> firstCache = new LinkedHashMap<>();
 		Map<String, Word> secondCache = new LinkedHashMap<>();
 		for(int i = 0; i < firstWords.size() && i < secondWords.size(); i++) {
@@ -92,7 +95,7 @@ public class EditPage extends AbstractVariablePage {
 				second.getMatches().add(first);
 			}
 		}
-		return new Quiz(0, title.trim(), firstName.trim(), secondName.trim(), new ArrayList<>(firstCache.values()), new ArrayList<>(secondCache.values()));
+		return new Quiz(0, title.trim(), firstName.trim(), secondName.trim(), password, new ArrayList<>(firstCache.values()), new ArrayList<>(secondCache.values()));
 	}
 
 	static Word getOrCreateWord(String word, Type type, Map<String, Word> cache) {

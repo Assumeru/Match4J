@@ -10,6 +10,7 @@ import org.ee.web.Status;
 import org.ee.web.request.Request;
 import org.ee.web.request.Request.Method;
 import org.ee.web.response.Response;
+import org.mindrot.jbcrypt.BCrypt;
 
 import com.ee.match.MatchContext;
 import com.ee.match.exception.StateException;
@@ -32,16 +33,25 @@ public class NewPage extends WebPage {
 			String title = params.getFirst("title");
 			String first = params.getFirst("first");
 			String second = params.getFirst("second");
+			String password = params.getFirst("password");
 			List<String> firstWords = getWords(params.get("first_word[]"));
 			List<String> secondWords = getWords(params.get("second_word[]"));
 			if(title != null && first != null && second != null) {
-				Quiz quiz = EditPage.buildQuiz(firstWords, secondWords, title, first, second);
+				Quiz quiz = EditPage.buildQuiz(firstWords, secondWords, title, first, second, hash(password));
 				save(quiz);
+				template.setVariable("password", password == null ? "" : password);
 				template.setVariable("saveerror", true);
 				template.setVariable("list", quiz);
 				template.setVariable(Variable.BODY, "edit");
 			}
 		}
+	}
+
+	private String hash(String password) {
+		if(password != null && !password.isEmpty()) {
+			return BCrypt.hashpw(password, BCrypt.gensalt(10, context.getSecureRandom()));
+		}
+		return null;
 	}
 
 	private List<String> getWords(List<String> list) {

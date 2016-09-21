@@ -3,8 +3,8 @@
 
 	function initTest() {
 		var $n, $key,
-		$keys = ['answer', 'caseSensitive', 'current', 'id', 'question', 'repeat', 'results', 'title', 'words'],
-		$test = Match.settings.currentTest !== undefined ? Match.settings.currentTest : $EEstore.getObject('currentTest', null);
+		$keys = ['answer', 'caseSensitive', 'current', 'id', 'question', 'repeat', 'results', 'title', 'words', 'password'],
+		$test = Match.settings.currentTest !== undefined ? Match.settings.currentTest : Match.Store.getObject('currentTest', null);
 		if($test !== null && $test.words !== undefined && $test.words.length > 0) {
 			$current = new Match.Test();
 			for($n = 0; $n < $keys.length; $n++) {
@@ -58,14 +58,14 @@
 			$('#current [data-result="wrong"]').show();
 			$('#current [data-result="correct"]').hide();
 			$('#current [data-type="correct"]').text($current.current.matches.join(' or '));
-			$('#current [data-type="not-wrong"]').off().click(bindNotWrong($current.current, $answer));
+			$('#current [data-type="not-wrong"]').show().off().click(bindNotWrong($current.current, $answer));
 		}
 		if($current.words.length > 0) {
 			$current.next();
 			showQuestion();
-			$EEstore.setObject('currentTest', $current);
+			Match.Store.setObject('currentTest', $current);
 		} else {
-			$EEstore.removeItem('currentTest');
+			Match.Store.removeItem('currentTest');
 			showResults();
 		}
 	}
@@ -74,6 +74,10 @@
 		return function($e) {
 			$e.preventDefault();
 			if(window.confirm('Are you sure you want to add "' + $answer + '" as a match for "' + $word.word + '"?')) {
+				var $password;
+				if($current.password) {
+					$password = window.prompt('This list requires a password to edit');
+				}
 				$.ajax({
 					method: 'POST',
 					url: Match.settings.ajaxurl,
@@ -81,20 +85,16 @@
 						type: 'add-match',
 						list: $current.id,
 						word: $word.id,
-						match: $answer
+						match: $answer,
+						password: $password
 					}
 				}).done(function($msg) {
 					$word.matches.push($answer);
 					console.log($msg);
 				}).fail(function($msg) {
-					var $json, $error = 'Something went wrong adding "' + $answer + '" as a match for "' + $word.word + '"';
-					try {
-						$json = JSON.parse($msg);
-						if($json && $json.error !== undefined) {
-							$error += ':\n' + $json.error;
-						}
-					} catch($e) {
-						console.log($e);
+					var $error = 'Something went wrong adding "' + $answer + '" as a match for "' + $word.word + '"';
+					if($msg.responseJSON && $msg.responseJSON.error !== undefined) {
+						$error += ':\n' + $msg.responseJSON.error;
 					}
 					window.alert($error);
 				});

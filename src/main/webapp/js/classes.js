@@ -6,6 +6,7 @@ Match.Test = function() {
 	this.title = '';
 	this.id = 0;
 	this.caseSensitive = true;
+	this.password = false;
 };
 Match.Test.prototype.fix = function() {
 	var $key, $n,

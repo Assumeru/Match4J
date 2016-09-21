@@ -17,11 +17,12 @@
 		$test.title = Match.settings.current.title;
 		$test.repeat = Match.settings.current.repeat;
 		$test.caseSensitive = Match.settings.current.caseSensitive;
+		$test.password = Match.settings.current.password;
 		$test.words = shuffle(Match.settings.current.words);
 		if(Match.settings.current.double) {
 			$test.words = $test.words.concat(shuffle(Match.settings.current.words));
 		}
-		$EEstore.setObject('currentTest', $test);
+		Match.Store.setObject('currentTest', $test);
 		Match.settings.currentTest = $test;
 	}
 })();

@@ -9,13 +9,13 @@
 	<link th:href="@{/css/bootstrap.min.css}" type="text/css" rel="stylesheet" />
 	<script th:src="@{/js/lib/jquery-3.1.0.min.js}"></script>
 	<script th:src="@{/js/lib/bootstrap.min.js}"></script>
-	<script th:src="@{/js/store.js}"></script>
-	<script th:src="@{/js/javascript.js}"></script>
 	<script th:inline="javascript">//<![CDATA[
 	var Match = {
 		settings: [[${javascriptSettings}]]
 	};
 	//]]></script>
+	<script th:src="@{/js/store.js}"></script>
+	<script th:src="@{/js/javascript.js}"></script>
 	<script th:each="file : ${javascript}" th:src="@{${'/js/' + file}}"></script>
 </head>
 <body>

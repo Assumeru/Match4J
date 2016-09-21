@@ -67,6 +67,7 @@ public class CurrentPage extends WebPage {
 				.put("double", twice)
 				.put("caseSensitive", caseSensitive)
 				.put("words", getWords(list, direction))
+				.put("password", list.hasPassword())
 				.build();
 	}
 

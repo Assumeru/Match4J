@@ -10,15 +10,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.ee.collection.MapSet;
 import org.ee.logger.LogManager;
 import org.ee.logger.Logger;
 import org.ee.sql.CloseableDataSource;
 import org.ee.sql.PreparedStatementBuilder;
+import org.mindrot.jbcrypt.BCrypt;
 
 import com.ee.match.MatchContext;
+import com.ee.match.exception.NoSuchListException;
+import com.ee.match.exception.NoSuchWordException;
+import com.ee.match.exception.NotAllowedException;
 import com.ee.match.exception.StateException;
 import com.ee.match.quiz.Quiz;
 import com.ee.match.quiz.Word;
@@ -45,11 +48,11 @@ public class State extends CloseableDataSource {
 
 	public Quiz getList(int id) {
 		try(Connection conn = dataSource.getConnection()) {
-			PreparedStatement statement = conn.prepareStatement("SELECT `title`, `first`, `second` FROM `lists` WHERE `id` = ?");
+			PreparedStatement statement = conn.prepareStatement("SELECT `title`, `first`, `second`, `password` FROM `lists` WHERE `id` = ?");
 			statement.setInt(1, id);
 			ResultSet result = statement.executeQuery();
 			if(result.next()) {
-				Quiz quiz = new Quiz(id, result.getString(1), result.getString(2), result.getString(3), new ArrayList<>(), new ArrayList<>());
+				Quiz quiz = new Quiz(id, result.getString(1), result.getString(2), result.getString(3), result.getString(4), new ArrayList<>(), new ArrayList<>());
 				getWords(conn, quiz);
 				return quiz;
 			}
@@ -149,7 +152,7 @@ public class State extends CloseableDataSource {
 	}
 
 	private void deleteWords(Connection conn, List<Word> toDelete) throws SQLException {
-		PreparedStatement statement = new PreparedStatementBuilder("DELETE FROM `words` WHERE `id` = IN(").appendParameters(toDelete.size()).append(')').build(conn);
+		PreparedStatement statement = new PreparedStatementBuilder("DELETE FROM `words` WHERE `id` IN(").appendParameters(toDelete.size()).append(')').build(conn);
 		for(int i = 0; i < toDelete.size(); i++) {
 			statement.setInt(1 + i, toDelete.get(i).getId());
 		}
@@ -162,7 +165,7 @@ public class State extends CloseableDataSource {
 			statement.setString(1, quiz.getTitle());
 			statement.setString(2, quiz.getFirst());
 			statement.setString(3, quiz.getSecond());
-			statement.setString(4, null);
+			statement.setString(4, quiz.getPassword());
 			statement.execute();
 			ResultSet keys = statement.getGeneratedKeys();
 			keys.next();
@@ -234,8 +237,9 @@ public class State extends CloseableDataSource {
 		statement.execute();
 	}
 
-	public int addMatch(int list, int word, String match) throws StateException {
+	public int addMatch(int list, int word, String match, String password) throws StateException {
 		try(Connection conn = dataSource.getConnection()) {
+			checkPassword(conn, list, password);
 			PreparedStatement statement = conn.prepareStatement("SELECT `type` FROM `words` WHERE `id` = ? AND `list` = ?");
 			statement.setInt(1, word);
 			statement.setInt(2, list);
@@ -251,10 +255,23 @@ public class State extends CloseableDataSource {
 				conn.commit();
 				return matchId;
 			} else {
-				throw new NoSuchElementException("Word " + word + " does not exist in " + list);
+				throw new NoSuchWordException("Word " + word + " does not exist in " + list);
 			}
 		} catch(SQLException e) {
 			throw new StateException("Failed to add match", e);
+		}
+	}
+
+	private void checkPassword(Connection conn, int list, String password) throws SQLException, StateException {
+		PreparedStatement statement = conn.prepareStatement("SELECT `password` FROM `lists` WHERE `id` = ?");
+		statement.setInt(1, list);
+		ResultSet result = statement.executeQuery();
+		if(!result.next()) {
+			throw new NoSuchListException("List " + list + " does not exist");
+		}
+		String hash = result.getString(1);
+		if(hash != null && (password == null || password.isEmpty() || !BCrypt.checkpw(password, hash))) {
+			throw new NotAllowedException();
 		}
 	}
 

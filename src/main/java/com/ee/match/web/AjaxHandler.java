@@ -1,6 +1,5 @@
 package com.ee.match.web;
 
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.ee.collection.ListMap;
@@ -14,6 +13,9 @@ import org.ee.web.response.Response;
 import org.ee.web.response.SimpleResponse;
 
 import com.ee.match.MatchContext;
+import com.ee.match.exception.NoSuchListException;
+import com.ee.match.exception.NoSuchWordException;
+import com.ee.match.exception.NotAllowedException;
 import com.ee.match.exception.StateException;
 
 public class AjaxHandler implements RequestFilter {
@@ -35,7 +37,8 @@ public class AjaxHandler implements RequestFilter {
 				int list = Integer.parseInt(params.getFirst("list"));
 				int word = Integer.parseInt(params.getFirst("word"));
 				String match = Objects.requireNonNull(params.getFirst("match"));
-				addMatch(list, word, match, response);
+				String password = params.getFirst("password");
+				addMatch(list, word, match, password, response);
 			} catch(NumberFormatException | NullPointerException e) {
 				response.setStatus(Status.BAD_REQUEST);
 				response.setOutput("{\"error\": \"Invalid parameters\"}");
@@ -44,14 +47,20 @@ public class AjaxHandler implements RequestFilter {
 		return response;
 	}
 
-	private void addMatch(int list, int word, String match, Response response) {
+	private void addMatch(int list, int word, String match, String password, Response response) {
 		try {
-			int wordId = context.getState().addMatch(list, word, match);
+			int wordId = context.getState().addMatch(list, word, match, password);
 			response.setStatus(Status.CREATED);
 			response.setOutput("{\"id\": " + wordId + "}");
-		} catch(NoSuchElementException e) {
+		} catch(NoSuchWordException e) {
 			response.setStatus(Status.BAD_REQUEST);
 			response.setOutput("{\"error\": \"The word you are trying to add a match for does not exist\"}");
+		} catch(NoSuchListException e) {
+			response.setStatus(Status.BAD_REQUEST);
+			response.setOutput("{\"error\": \"This list does not exist\"}");
+		} catch(NotAllowedException e) {
+			response.setStatus(Status.FORBIDDEN);
+			response.setOutput("{\"error\": \"Wrong password\"}");
 		} catch(StateException e) {
 			LOG.e("Failed to add word", e);
 			response.setStatus(Status.INTERNAL_SERVER_ERROR);
