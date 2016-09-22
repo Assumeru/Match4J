@@ -10,7 +10,6 @@ import org.ee.web.Status;
 import org.ee.web.request.Request;
 import org.ee.web.request.Request.Method;
 import org.ee.web.response.Response;
-import org.mindrot.jbcrypt.BCrypt;
 
 import com.ee.match.MatchContext;
 import com.ee.match.exception.StateException;
@@ -45,13 +44,6 @@ public class NewPage extends WebPage {
 				template.setVariable(Variable.BODY, "edit");
 			}
 		}
-	}
-
-	private String hash(String password) {
-		if(password != null && !password.isEmpty()) {
-			return BCrypt.hashpw(password, BCrypt.gensalt(10, context.getSecureRandom()));
-		}
-		return null;
 	}
 
 	private List<String> getWords(List<String> list) {

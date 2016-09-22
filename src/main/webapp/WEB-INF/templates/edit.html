@@ -5,7 +5,11 @@
 	<form method="post">
 		<p class="alert alert-danger" th:if="${saveerror}">List not saved. Make sure all fields have been filled out.</p>
 		<input type="text" name="title" placeholder="Title" th:value="${list.title}" required />
-		<input th:if="${password == null && list.hasPassword()}" type="password" name="password" placeholder="Password" required />
+		<th:block th:if="${password == null}">
+		<input th:if="${list.hasPassword()}" type="password" name="password" placeholder="Password" required />
+		<label th:if="${list.hasPassword()}"><input type="checkbox" name="removepassword" />Remove password</label>
+		<input type="password" name="newpassword" placeholder="New password" />
+		</th:block>
 		<input th:if="${password != null}" type="password" name="password" placeholder="Password (Optional)" th:value="${password}" />
 		<table class="table">
 			<thead>

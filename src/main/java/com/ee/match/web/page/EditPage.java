@@ -45,12 +45,19 @@ public class EditPage extends AbstractVariablePage {
 			String first = params.getFirst("first");
 			String second = params.getFirst("second");
 			String password = params.getFirst("password");
+			boolean removePassword = "on".equals(params.getFirst("removepassword"));
+			String newPassword = params.getFirst("newpassword");
 			List<String> firstWords = getWords(params.get("first_word[]"));
 			List<String> secondWords = getWords(params.get("second_word[]"));
 			if(title != null && first != null && second != null) {
 				Quiz edited = buildQuiz(firstWords, secondWords, title, first, second, quiz.getPassword());
 				edited.setId(quiz.getId());
 				if(!quiz.hasPassword() || (password != null && !password.isEmpty() && quiz.passwordMatches(password))) {
+					if(removePassword) {
+						edited.setPassword(null);
+					} else if(newPassword != null && !newPassword.isEmpty()) {
+						edited.setPassword(hash(newPassword));
+					}
 					saveChanges(quiz, edited);
 				}
 				template.setVariable("saveerror", true);

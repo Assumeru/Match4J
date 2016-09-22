@@ -9,6 +9,7 @@ import org.ee.web.request.Request;
 import org.ee.web.request.filter.RequestFilter;
 import org.ee.web.response.Response;
 import org.ee.web.response.SimpleResponse;
+import org.mindrot.jbcrypt.BCrypt;
 
 import com.ee.match.MatchContext;
 import com.ee.match.web.template.Template;
@@ -63,5 +64,12 @@ public abstract class WebPage implements RequestFilter {
 		Response response = new SimpleResponse(Status.SEE_OTHER);
 		response.setHeader("Location", context.getContext().getContextPath() + path);
 		throw new WebException(response);
+	}
+
+	protected String hash(String password) {
+		if(password != null && !password.isEmpty()) {
+			return BCrypt.hashpw(password, BCrypt.gensalt(10, context.getSecureRandom()));
+		}
+		return null;
 	}
 }

@@ -106,11 +106,12 @@ public class State extends CloseableDataSource {
 
 	public void modifyList(Quiz quiz, Quiz edited) throws StateException {
 		try(Connection conn = dataSource.getConnection()) {
-			PreparedStatement statement = conn.prepareStatement("UPDATE `lists` SET `title` = ?, `first` = ?, `second` = ? WHERE `id` = ?");
+			PreparedStatement statement = conn.prepareStatement("UPDATE `lists` SET `title` = ?, `first` = ?, `second` = ?, `password` = ? WHERE `id` = ?");
 			statement.setString(1, edited.getTitle());
 			statement.setString(2, edited.getFirst());
 			statement.setString(3, edited.getSecond());
-			statement.setInt(4, quiz.getId());
+			statement.setString(4, edited.getPassword());
+			statement.setInt(5, quiz.getId());
 			statement.execute();
 			updateWords(conn, quiz, edited);
 			conn.commit();

@@ -9,7 +9,7 @@ public class Quiz {
 	private final String title;
 	private final String first;
 	private final String second;
-	private final String password;
+	private String password;
 	private final List<Word> firstWords;
 	private final List<Word> secondWords;
 
@@ -57,6 +57,10 @@ public class Quiz {
 
 	public String getPassword() {
 		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public boolean hasPassword() {
