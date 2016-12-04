@@ -2,7 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <body th:fragment="fragment" th:remove="tag">
 <section id="list">
-	<p class="pull-right"><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}" title="Edit"><span class="glyphicon glyphicon-edit"></span></a></p>
+	<p class="pull-right">
+		<a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+		<a class="btn btn-primary" th:href="@{${'/clone/' + list.id}}" title="Clone"><span class="glyphicon glyphicon-duplicate"></span></a>
+	</p>
 	<h2 th:text="${list.title}"></h2>
 	<form method="post" th:action="@{/current}">
 		<input type="hidden" name="id" th:value="${list.id}" />

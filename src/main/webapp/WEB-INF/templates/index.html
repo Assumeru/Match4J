@@ -6,7 +6,7 @@
 		<table class="table">
 			<thead>
 				<tr>
-					<th>#</th><th>Title</th><th>First</th><th>Second</th><th>Edit</th>
+					<th>#</th><th>Title</th><th>First</th><th>Second</th><th>Edit</th><th>Clone</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -16,6 +16,7 @@
 					<td th:text="${list.first}"></td>
 					<td th:text="${list.second}"></td>
 					<td><a class="btn btn-primary" th:href="@{${'/edit/' + list.id}}"><span class="glyphicon glyphicon-edit"></span></a></td>
+					<td><a class="btn btn-primary" th:href="@{${'/clone/' + list.id}}"><span class="glyphicon glyphicon-duplicate"></span></a></td>
 				</tr>
 			</tbody>
 		</table>
