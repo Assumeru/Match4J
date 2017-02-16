@@ -25,9 +25,10 @@ import com.ee.match.web.page.Http500;
 public class MatchRequestHandler extends RequestFilterHandler {
 	private static final Logger LOG = LogManager.createLogger();
 	private final Map<Status, RequestHandler> statusPages;
+	private final Set<RequestFilter> filters;
 
 	public MatchRequestHandler(MatchContext context) {
-		super(initFilters(context));
+		filters = initFilters(context);
 		statusPages = new MapBuilder<Status, RequestHandler>()
 				.put(Status.NOT_FOUND, new Http404(context))
 				.put(Status.INTERNAL_SERVER_ERROR, new Http500(context))
@@ -70,5 +71,10 @@ public class MatchRequestHandler extends RequestFilterHandler {
 	@Override
 	protected RequestHandler getStatusPage(Status status) {
 		return statusPages.get(status);
+	}
+
+	@Override
+	protected Set<RequestFilter> getFilters() {
+		return filters;
 	}
 }
